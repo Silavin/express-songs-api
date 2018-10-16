@@ -1,29 +1,77 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
 const app = express();
-const _ = require('lodash');
-const PORT = 3000
 
-app.use(express.static('client'));
-app.use(express.json())
+app.use(express.json());
 
-let songs = [];
-let id = 0;
+let songList = [
+  {
+    id: 1,
+    name: "The First",
+    artist: "First"
+  },
+  {
+    id: 2,
+    name: "The Second",
+    artist: "Second"
+  },
+  {
+    id: 3,
+    name: "The Thrid",
+    artist: "Third"
+  }
+];
 
-//return list of all songs
+app.get("/songs", (req, res) => {
+  res.status(200).json(songList);
+});
 
+app.get("/songs/:id", (req, res) => {
+  const songsId = req.params.id;
+  res.status(200).json(
+    songList.find(song => {
+      return song.id === parseInt(songsId);
+    })
+  );
+});
 
-//create a new song, and return new song
+app.post("/songs", (req, res) => {
+  const newSong = {
+    id: songList.length + 1,
+    name: req.body.name,
+    artist: req.body.artist
+  };
 
+  songList.push(newSong);
+  res.status(201).json(newSong);
+});
 
-//return a song with id 
+app.put("/songs/:id", (req, res) => {
+  const selectedSong = songList.find(song => {
+    return song.id === parseInt(req.params.id);
+  });
 
+  const { name, artist } = req.body;
 
-//edit a song with id, and return edited song
+  const copyOfSong = { ...selectedSong };
 
+  selectedSong["name"] = name ? name : copyOfSong["name"];
+  selectedSong["artist"] = artist ? artist : copyOfSong["artist"];
 
-//delete a song with id, and return deleted song
+  res.status(200).json(selectedSong);
+});
 
+app.delete("/songs/:id", (req, res) => {
+  const selectedSong = songList.find(song => {
+    return song.id === parseInt(req.params.id);
+  });
 
-app.listen(PORT);
-console.log(`Server listening on port ${PORT}`);
+  songList = songList.filter(song => {
+    return song.id !== parseInt(req.params.id);
+  });
+
+  res.status(200).json(selectedSong);
+});
+
+app.listen(3000, () => {
+  console.log("The app is starting up");
+});
